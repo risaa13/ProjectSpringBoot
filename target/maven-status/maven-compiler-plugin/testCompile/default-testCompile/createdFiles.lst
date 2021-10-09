@@ -1,0 +1,5 @@
+com\alodia_arum\hotel\builder\ReservationBuilder.class
+com\alodia_arum\hotel\HotelTest.class
+com\alodia_arum\hotel\builder\HotelBuilder.class
+com\alodia_arum\hotel\builder\GuestBuilder.class
+com\alodia_arum\hotel\builder\RoomBuilder.class
