@@ -67,30 +67,6 @@ public class Reservation {
         this.room = room;
     }
 
-    @NotNull(message = "{not_empty_date}")
-    @Column(name = "reservation_from")
-    @Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    @DateTimeFormat(pattern = "dd-MM-yy")
-    public DateTime getFrom() {
-        return from;
-    }
-
-    public void setFrom(DateTime from) {
-        this.from = from;
-    }
-
-    @NotNull(message = "{not_empty_date}")
-    @Column(name = "reservation_to")
-    @Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    @DateTimeFormat(pattern = "dd-MM-yy")
-    public DateTime getTo() {
-        return to;
-    }
-
-    public void setTo(DateTime to) {
-        this.to = to;
-    }
-
     @Column(name = "reservation_cancelled")
     public boolean isCancelled() {
         return cancelled;
@@ -115,7 +91,32 @@ public class Reservation {
             fromString = org.joda.time.format.DateTimeFormat.forPattern("yyyy-MM-dd").print(to);
         return fromString;
     }
+    
+    //Jika Start Date Kosong
+    @Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @DateTimeFormat(pattern = "dd-MM-yyyy")
+    @NotNull(message = "{not_empty_date}")
+    @Column(name = "reservation_from")
+    public DateTime getFrom() {
+        return from;
+    }
 
+    public void setFrom(DateTime from) {
+        this.from = from;
+    }
+    
+    //Jika End Date Kosong
+    @Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @DateTimeFormat(pattern = "dd-MM-yyyy")
+    @Column(name = "reservation_to")
+    @NotNull(message = "{not_empty_date}")
+    public DateTime getTo() {
+        return to;
+    }
+
+    public void setTo(DateTime to) {
+        this.to = to;
+    }
 
     @Override
     public String toString() {

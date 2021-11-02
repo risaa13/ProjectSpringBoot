@@ -26,7 +26,7 @@
     <div id="user_info">
         <h2>${userFormTitle}</h2>
 
-        <form:form modelAttribute="guest" id="userInfoForm" method="post">
+        <form:form modelAttribute="guest" id="userInfoForm" method="post" onSubmit="return validateForm()">
 
             <c:if test="${not empty message}">
                 <div id="message" class="${message.type}">${message.message}</div>
@@ -87,5 +87,35 @@
                 <input name="reset" type="reset" value="${resetLabel}"/>
             </a>
         </form:form>
+            /* Penambahan Javascript untuk Validasi Login Form */
+            <script>
+                function validateForm()
+                {
+                    if(document.loginForm.sec_username.value=="")
+                    {
+                      alert("User Name should be left blank");
+                      document.loginForm.sec_username.focus();
+                      return false;
+                    }
+                    else if(document.loginForm.sec_password.value=="")
+                    {
+                      alert("Password should be left blank");
+                      document.loginForm.sec_password.focus();
+                      return false;
+                    }
+                    
+                    if(document.loginForm.sec_username.value!="")
+                    {
+                        var string = document.loginForm.sec_username.value;
+                        var jml=string.length;
+                        if(jml>10)
+                        {
+                            alert("User Name should be less than 10");
+                            document.loginForm.sec_username.focus();
+                            return false;
+                        }
+                    }
+                }
+            </script>
     </div>
 </div>
