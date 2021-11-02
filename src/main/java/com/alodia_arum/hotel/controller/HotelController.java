@@ -133,19 +133,19 @@ public class HotelController {
 
     /* Update room information */
     @RequestMapping(value = "/{roomId}", params = "edit", method = RequestMethod.POST)
-    public String updateRoom(@Valid Room room, BindingResult bindingResult, Model model,
-                             HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes,
-                             Locale locale) {
+    public String updateRoom(@Valid Room room, BindingResult inputResult,HttpServletRequest httpServletRequest,
+            RedirectAttributes redirectAttributes,
+                             Locale locale, Model modelInput) {
         logger.info("Updating room");
         room.setHotel(hotel);
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("message", new Message("error",
+        if (inputResult.hasErrors()) {
+            modelInput.addAttribute("message", new Message("error",
                     messageSource.getMessage("room_save_error_text", new Object[]{}, locale)));
-            setMainAttributes(model);
-            setRoomAttributes(model, room);
+            setMainAttributes(modelInput);
+            setRoomAttributes(modelInput, room);
             return "edit";
         }
-        model.asMap().clear();
+        modelInput.asMap().clear();
         redirectAttributes.addFlashAttribute("message", new Message("success",
                 messageSource.getMessage("room_save_success_text", new Object[]{}, locale)));
         roomService.save(room);
@@ -208,22 +208,7 @@ public class HotelController {
         logger.info("Making reservation");
         reservation.setGuest(guest);
         reservation.setRoom(room);
-        if (bindingResult.hasErrors() || reservation.getFrom() == null || reservation.getTo() == null) {
-            model.addAttribute("message", new Message("error",
-                    messageSource.getMessage("room_add_error_text", new Object[]{}, locale)));
-            setMainAttributes(model);
-            model.addAttribute("room", room);
-            model.addAttribute("reservation", reservation);
-            return "make";
-        }
-        if (reservation.getTo().isBefore(reservation.getFrom().plusDays(1).toInstant())) {
-            model.addAttribute("message", new Message("error",
-                    messageSource.getMessage("room_dates_error_text", new Object[]{}, locale)));
-            setMainAttributes(model);
-            model.addAttribute("room", room);
-            model.addAttribute("reservation", reservation);
-            return "make";
-        }
+        
         Long realId = reservation.getId();
         if (realId == null) {
             realId = 0L;
@@ -238,6 +223,27 @@ public class HotelController {
             model.addAttribute("reservation", reservation);
             return "make";
         }
+        
+        //Jika Saat Simpan Data, Room Number-nya Kosong dan membuang coding yang menyebabkan bug
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("message", new Message("error",
+                    messageSource.getMessage("room_add_error_text", new Object[]{}, locale)));
+            setMainAttributes(model);
+            model.addAttribute("room", room);
+            model.addAttribute("reservation", reservation);
+            return "make";
+        }
+        
+        //Jika Saat Pemesanan Sudah ada Orang Lain Yang Memesan Terlebih Dahulu
+        if (reservation.getTo().isBefore(reservation.getFrom().plusDays(1).toInstant())) {
+            model.addAttribute("message", new Message("error",
+                    messageSource.getMessage("room_dates_error_text", new Object[]{}, locale)));
+            setMainAttributes(model);
+            model.addAttribute("room", room);
+            model.addAttribute("reservation", reservation);
+            return "make";
+        }
+        
         model.asMap().clear();
         redirectAttributes.addFlashAttribute("message", new Message("success",
                 messageSource.getMessage("room_add_success_text", new Object[]{}, locale)));
@@ -362,26 +368,34 @@ public class HotelController {
 
     /* Add new guest to hotel */
     @RequestMapping(value = "/sec_registry", method = RequestMethod.POST)
-    public String saveRegistry(@Valid Guest guest, BindingResult bindingResult, Model model,
+    public String saveRegistry(@Valid Guest guest, BindingResult checkInputResult,
                              HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes,
-                             Locale locale) {
+                             Locale locale, Model modelInput) {
         logger.info("Registering guest");
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("message", new Message("error",
+        
+        //Pengecekan Error saat penginputan Register User/ Update Info
+        if (checkInputResult.hasErrors()) {
+            modelInput.addAttribute("message", new Message("error",
                     messageSource.getMessage("user_save_error_text", new Object[]{}, locale)));
-            setGuestAttributes(model, guest);
+            setGuestAttributes(modelInput, guest);
             return "sec_registry";
         }
-        model.asMap().clear();
+        
+        //Berhasil saat penginputan Register User/ Update Info
+        modelInput.asMap().clear();
         redirectAttributes.addFlashAttribute("message", new Message("success",
                 messageSource.getMessage("user_save_success_text", new Object[]{}, locale)));
-        String newPassword = oldPassword;
+        
+        //Membandingkan Password Lama dengan Baru
+        String newPass = oldPassword;
         if (!guest.getPassword().equals(oldPassword)) {
             logger.info("Registering password");
-            newPassword = md5PasswordEncoder.encodePassword(guest.getPassword(), null);
+            newPass = md5PasswordEncoder.encodePassword(guest.getPassword(), null);
         }
-        guest.setPassword(newPassword);
-        guest.setConfirm(newPassword);
+        
+        
+        guest.setPassword(newPass);
+        guest.setConfirm(newPass);
         if (guest.getRole() == null) {
             guest.setRole(GuestRole.ROLE_GUEST);
         }
